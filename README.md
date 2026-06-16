@@ -77,7 +77,7 @@ This project was planned and implemented entirely using AI tooling as a demonstr
 
 **Verification** — The final app was verified end-to-end using Playwright headless Chromium, driven by the `verify` skill, before pushing.
 
-Watch the full build walkthrough: [youtube.com/watch?v=ZUkVeXmD-Ek](https://youtu.be/ZUkVeXmD-Ek?si=sRgz7ojAm48wne7p)
+Learn about AI Passport (by 9ARM): [youtube.com/watch?v=ZUkVeXmD-Ek](https://youtu.be/ZUkVeXmD-Ek?si=sRgz7ojAm48wne7p)
 
 ### AI tools used
 
