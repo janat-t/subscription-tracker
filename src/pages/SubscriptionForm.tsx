@@ -10,11 +10,17 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+]
+
 function emptyState(): {
   name: string
   price: string
   billingCycle: BillingCycle
   billingDay: string
+  billingMonth: number
   paymentType: 'Credit Card' | 'Apple Pay' | 'Google Pay'
   cardLabel: string
   category: Category
@@ -24,6 +30,7 @@ function emptyState(): {
     price: '',
     billingCycle: 'monthly',
     billingDay: '1',
+    billingMonth: new Date().getMonth() + 1,
     paymentType: 'Credit Card',
     cardLabel: '',
     category: 'Entertainment',
@@ -49,6 +56,7 @@ export default function SubscriptionForm() {
       price: String(sub.price),
       billingCycle: sub.billingCycle,
       billingDay: String(sub.billingDay),
+      billingMonth: sub.billingMonth ?? (new Date(sub.createdAt).getMonth() + 1),
       category: sub.category,
       paymentType:
         sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay'
@@ -74,6 +82,7 @@ export default function SubscriptionForm() {
       price: parseFloat(state.price),
       billingCycle: state.billingCycle,
       billingDay: parseInt(state.billingDay, 10),
+      billingMonth: state.billingCycle === 'annually' ? state.billingMonth : undefined,
       paymentMethod,
       category: state.category,
     }
@@ -143,8 +152,30 @@ export default function SubscriptionForm() {
                 max="31"
                 value={state.billingDay}
                 onChange={e => set({ billingDay: e.target.value })}
+                required
               />
             </div>
+
+            {state.billingCycle === 'annually' && (
+              <div className="space-y-2">
+                <Label htmlFor="billingMonth">Billing Month</Label>
+                <Select
+                  value={String(state.billingMonth)}
+                  onValueChange={v => v && set({ billingMonth: parseInt(v, 10) })}
+                >
+                  <SelectTrigger id="billingMonth">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((month, i) => (
+                      <SelectItem key={month} value={String(i + 1)}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="paymentType">Payment Method</Label>

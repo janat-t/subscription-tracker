@@ -31,6 +31,7 @@ export interface Subscription {
   price: number
   billingCycle: BillingCycle
   billingDay: number
+  billingMonth?: number  // 1-12, only used for annually; absent in legacy data
   paymentMethod: string
   category: Category
   createdAt: string

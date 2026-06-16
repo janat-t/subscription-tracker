@@ -10,21 +10,28 @@ export function monthlyEquivalent(sub: Subscription): number {
   return sub.billingCycle === 'annually' ? sub.price / 12 : sub.price
 }
 
+function clampedDate(year: number, month: number, day: number): Date {
+  const lastDay = new Date(year, month + 1, 0).getDate()
+  return new Date(year, month, Math.min(day, lastDay))
+}
+
 export function nextPaymentDate(sub: Subscription): Date {
   const today = new Date()
   const day = sub.billingDay
 
   if (sub.billingCycle === 'monthly') {
-    const candidate = new Date(today.getFullYear(), today.getMonth(), day)
+    const candidate = clampedDate(today.getFullYear(), today.getMonth(), day)
     if (candidate >= today) return candidate
-    return new Date(today.getFullYear(), today.getMonth() + 1, day)
+    return clampedDate(today.getFullYear(), today.getMonth() + 1, day)
   }
 
-  const created = new Date(sub.createdAt)
-  const month = created.getMonth()
-  const thisYear = new Date(today.getFullYear(), month, day)
+  // billingMonth is 1-indexed; fall back to createdAt month for legacy data
+  const month = sub.billingMonth != null
+    ? sub.billingMonth - 1
+    : new Date(sub.createdAt).getMonth()
+  const thisYear = clampedDate(today.getFullYear(), month, day)
   if (thisYear >= today) return thisYear
-  return new Date(today.getFullYear() + 1, month, day)
+  return clampedDate(today.getFullYear() + 1, month, day)
 }
 
 export function formatDate(date: Date): string {
