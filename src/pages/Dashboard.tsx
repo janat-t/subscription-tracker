@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { monthlyEquivalent, formatCurrency } from '@/lib/utils'
@@ -14,6 +14,8 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { subscriptions, currency, remove, setCurrency } = useSubscriptions()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const deleteNameRef = useRef('')
+  if (deleteTarget) deleteNameRef.current = deleteTarget.name
 
   const totalMonthly = subscriptions.reduce((sum, s) => sum + monthlyEquivalent(s), 0)
 
@@ -74,7 +76,7 @@ export default function Dashboard() {
 
         <DeleteConfirmDialog
           open={deleteTarget !== null}
-          subscriptionName={deleteTarget?.name ?? ''}
+          subscriptionName={deleteNameRef.current}
           onConfirm={() => {
             if (deleteTarget) remove(deleteTarget.id)
             setDeleteTarget(null)
