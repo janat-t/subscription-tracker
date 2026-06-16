@@ -4,7 +4,7 @@ import SubscriptionForm from '@/pages/SubscriptionForm'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/subscription-tracker-qwen">
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/add" element={<SubscriptionForm />} />
