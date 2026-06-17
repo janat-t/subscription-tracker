@@ -23,3 +23,9 @@ The main view (`/`). Shows total monthly spend, spend by category, and a list of
 
 ## Currency
 A single user-configured currency symbol/code applied to all prices. No conversion math is performed.
+
+## User
+An authenticated account identified by email + password. Each user owns their own subscriptions.
+
+## Session
+Active authenticated state for a User. Absent = unauthenticated; present = app is usable.

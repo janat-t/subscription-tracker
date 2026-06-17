@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
-import { getSubscriptions } from '@/lib/storage'
 import type { BillingCycle, Category } from '@/types'
 import { CATEGORIES } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -40,15 +39,14 @@ function emptyState(): {
 export default function SubscriptionForm() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { add, update } = useSubscriptions()
+  const { add, update, subscriptions } = useSubscriptions()
 
   const [state, setState] = useState(emptyState)
 
   useEffect(() => {
     if (!id) return
 
-    const subs = getSubscriptions()
-    const sub = subs.find(s => s.id === id)
+    const sub = subscriptions.find(s => s.id === id)
     if (!sub) return
 
     setState({
@@ -67,7 +65,7 @@ export default function SubscriptionForm() {
           ? ''
           : sub.paymentMethod,
     })
-  }, [id])
+  }, [id, subscriptions])
 
   const set = (patch: Partial<typeof state>) => setState(prev => ({ ...prev, ...patch }))
 
