@@ -14,7 +14,7 @@ const MONTHS = [
   'July','August','September','October','November','December',
 ]
 
-const STATIC_PAYMENT_METHODS = ['Credit Card', 'Apple Pay', 'Google Pay', 'PayPal', 'PayPay', 'Venmo']
+const STATIC_PAYMENT_METHODS = ['Credit Card', 'Apple Pay', 'Google Pay', 'PayPay']
 
 function emptyState(): {
   name: string
