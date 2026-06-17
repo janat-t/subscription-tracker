@@ -51,9 +51,12 @@ function RecoverPasswordScreen({ onDone }: { onDone: () => void }) {
 const AuthContext = createContext<{ showAuth: () => void }>({ showAuth: () => {} })
 export function useAuth() { return useContext(AuthContext) }
 
+let migrating = false
 async function migrateLocalStorage() {
+  if (migrating) return
+  migrating = true
   const raw = localStorage.getItem("subscriptions")
-  if (!raw) return
+  if (!raw) { migrating = false; return }
   try {
     const subs = JSON.parse(raw)
     if (!Array.isArray(subs)) return
@@ -78,6 +81,8 @@ async function migrateLocalStorage() {
     }
     localStorage.removeItem("subscriptions")
   } catch {
+  } finally {
+    migrating = false
   }
 }
 
