@@ -63,7 +63,7 @@ export default function SubscriptionForm() {
           ? (sub.paymentMethod as 'Apple Pay' | 'Google Pay')
           : 'Credit Card',
       cardLabel:
-        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay'
+        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay' || sub.paymentMethod === 'Credit Card'
           ? ''
           : sub.paymentMethod,
     })
@@ -77,7 +77,7 @@ export default function SubscriptionForm() {
     setSubmitting(true)
 
     const paymentMethod =
-      state.paymentType === 'Credit Card' ? state.cardLabel : state.paymentType
+      state.paymentType === 'Credit Card' ? (state.cardLabel.trim() || 'Credit Card') : state.paymentType
 
     const data = {
       name: state.name,
