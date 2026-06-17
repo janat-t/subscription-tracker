@@ -140,7 +140,9 @@ export default function Dashboard() {
           </div>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue />
+              <SelectValue>
+                {({'price-desc': 'Price: High → Low', 'price-asc': 'Price: Low → High', 'name': 'Name', 'next-payment': 'Next payment'} as Record<string, string>)[sortBy]}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="price-desc">Price: High → Low</SelectItem>
@@ -159,7 +161,7 @@ export default function Dashboard() {
           >
             All
           </Button>
-          {CATEGORIES.map((cat) => (
+          {CATEGORIES.filter(cat => subscriptions.some(s => s.category === cat)).map((cat) => (
             <Button
               key={cat}
               variant={filterCategory === cat ? 'default' : 'outline'}
