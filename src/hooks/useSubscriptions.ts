@@ -25,11 +25,12 @@ export function useSubscriptions() {
   const [syncing, setSyncing] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const syncingRef = useRef(false)
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setIsAuthenticated(!!data.session)
-      if (!data.session) return
+      if (!data.session) { hasLoadedRef.current = true; return }
       getSubscriptions()
         .then(subs => {
           if (!subs) return
@@ -42,6 +43,7 @@ export function useSubscriptions() {
           const now = new Date()
           saveLastSyncedAt(now)
           setLastSyncedAt(now)
+          hasLoadedRef.current = true
         })
         .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
       getCurrencyDB()
@@ -59,6 +61,7 @@ export function useSubscriptions() {
 
   const sync = useCallback(async () => {
     if (syncingRef.current) return
+    if (!hasLoadedRef.current) return
     syncingRef.current = true
     setSyncing(true)
     try {
@@ -84,6 +87,17 @@ export function useSubscriptions() {
     window.addEventListener("blur", sync)
     return () => window.removeEventListener("blur", sync)
   }, [sync])
+
+  useEffect(() => {
+    const handleFocus = async () => {
+      const subs = await getSubscriptions()
+      if (!subs || subs.length === 0) return
+      setSubscriptions(subs)
+      saveLocalSubscriptions(subs)
+    }
+    window.addEventListener("focus", handleFocus)
+    return () => window.removeEventListener("focus", handleFocus)
+  }, [])
 
   const add = useCallback((sub: Omit<Subscription, "id" | "createdAt">) => {
     const newSub: Subscription = {
