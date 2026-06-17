@@ -14,15 +14,25 @@ import {
 } from '@/components/ui/select'
 import SubscriptionList from '@/components/SubscriptionList'
 import CategoryChart from '@/components/CategoryChart'
-import CurrencyPicker from '@/components/CurrencyPicker'
+import SettingsDialog from '@/components/SettingsDialog'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog'
 import { CATEGORIES, type Category } from '@/types'
-import { Plus, Search } from 'lucide-react'
-import ThemeToggle from '@/components/ThemeToggle'
+import { Plus, Search, LogOut, UploadCloud } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+
+function formatRelativeTime(date: Date): string {
+  const s = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (s < 60) return 'just now'
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { subscriptions, currency, remove, setCurrency } = useSubscriptions()
+  const { subscriptions, currency, remove, setCurrency, error, lastSyncedAt, sync, syncing, isAuthenticated } = useSubscriptions()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const deleteNameRef = useRef('')
   if (deleteTarget) deleteNameRef.current = deleteTarget.name
@@ -50,14 +60,38 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">Subscription Tracker</h1>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <CurrencyPicker currency={currency} onChangeCurrency={setCurrency} />
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1">
+                {lastSyncedAt && (
+                  <span className="text-xs text-muted-foreground">Saved {formatRelativeTime(lastSyncedAt)}</span>
+                )}
+                <Button variant="ghost" size="sm" onClick={sync} disabled={syncing}>
+                  <UploadCloud className="size-4 mr-1" />
+                  {syncing ? 'Saving...' : 'Save to cloud'}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()}>
+                  <LogOut className="size-4" />
+                </Button>
+                <SettingsDialog currency={currency} onChangeCurrency={setCurrency} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                  Sign in to sync
+                </Button>
+                <SettingsDialog currency={currency} onChangeCurrency={setCurrency} />
+              </div>
+            )}
             <Button size="sm" onClick={() => navigate('/add')}>
               <Plus className="size-4 mr-1" />
               Add
             </Button>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded">{error}</div>
+        )}
 
         {/* Total monthly spend */}
         <Card>

@@ -1,37 +1,131 @@
-import { useState, useCallback } from 'react'
-import { getSubscriptions, saveSubscriptions, getCurrency, saveCurrency } from '@/lib/storage'
-import type { Subscription } from '@/types'
+import { useState, useEffect, useCallback, useRef } from "react"
+import { supabase } from "@/lib/supabase"
+import {
+  getLocalSubscriptions,
+  saveLocalSubscriptions,
+  getSubscriptions,
+  addSubscription,
+  updateSubscription,
+  deleteSubscription,
+  syncToDatabase,
+  getCurrency,
+  saveCurrency,
+  getCurrencyDB,
+  saveCurrencyDB,
+  getLastSyncedAt,
+  saveLastSyncedAt,
+} from "@/lib/storage"
+import type { Subscription } from "@/types"
 
 export function useSubscriptions() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => getSubscriptions())
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => getLocalSubscriptions())
   const [currency, setCurrencyState] = useState<string>(() => getCurrency())
+  const [error, setError] = useState<string | null>(null)
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(() => getLastSyncedAt())
+  const [syncing, setSyncing] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const syncingRef = useRef(false)
 
-  const add = useCallback((sub: Omit<Subscription, 'id' | 'createdAt'>) => {
-    const next = [
-      ...getSubscriptions(),
-      { ...sub, id: crypto.randomUUID(), createdAt: new Date().toISOString() },
-    ]
-    saveSubscriptions(next)
-    setSubscriptions(next)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(!!data.session)
+      if (!data.session) return
+      getSubscriptions()
+        .then(subs => {
+          if (!subs) return
+          setSubscriptions(subs)
+          saveLocalSubscriptions(subs)
+          const now = new Date()
+          saveLastSyncedAt(now)
+          setLastSyncedAt(now)
+        })
+        .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      getCurrencyDB()
+        .then(c => {
+          if (c) { saveCurrency(c); setCurrencyState(c) }
+        })
+        .catch(() => {})
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
-  const update = useCallback((id: string, sub: Omit<Subscription, 'id' | 'createdAt'>) => {
-    const current = getSubscriptions()
-    const next = current.map(s => s.id === id ? { ...s, ...sub } : s)
-    saveSubscriptions(next)
-    setSubscriptions(next)
+  const sync = useCallback(async () => {
+    if (syncingRef.current) return
+    syncingRef.current = true
+    setSyncing(true)
+    try {
+      await syncToDatabase(getLocalSubscriptions())
+      const subs = await getSubscriptions()
+      if (subs) {
+        setSubscriptions(subs)
+        saveLocalSubscriptions(subs)
+      }
+      const now = new Date()
+      saveLastSyncedAt(now)
+      setLastSyncedAt(now)
+      setError(null)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      syncingRef.current = false
+      setSyncing(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener("blur", sync)
+    return () => window.removeEventListener("blur", sync)
+  }, [sync])
+
+  const add = useCallback((sub: Omit<Subscription, "id" | "createdAt">) => {
+    const newSub: Subscription = {
+      ...sub,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    }
+    setSubscriptions(prev => {
+      const next = [...prev, newSub]
+      saveLocalSubscriptions(next)
+      return next
+    })
+    addSubscription(newSub).catch((e: unknown) => {
+      setError(e instanceof Error ? e.message : String(e))
+    })
+  }, [])
+
+  const update = useCallback((id: string, sub: Omit<Subscription, "id" | "createdAt">) => {
+    setSubscriptions(prev => {
+      const next = prev.map(s => s.id === id ? { ...s, ...sub } : s)
+      saveLocalSubscriptions(next)
+      return next
+    })
+    updateSubscription(id, sub).catch((e: unknown) => {
+      setError(e instanceof Error ? e.message : String(e))
+    })
   }, [])
 
   const remove = useCallback((id: string) => {
-    const next = getSubscriptions().filter(s => s.id !== id)
-    saveSubscriptions(next)
-    setSubscriptions(next)
+    setSubscriptions(prev => {
+      const next = prev.filter(s => s.id !== id)
+      saveLocalSubscriptions(next)
+      return next
+    })
+    deleteSubscription(id).catch((e: unknown) => {
+      setError(e instanceof Error ? e.message : String(e))
+    })
   }, [])
 
   const setCurrency = useCallback((c: string) => {
     saveCurrency(c)
     setCurrencyState(c)
+    saveCurrencyDB(c).catch((e: unknown) => {
+      setError(e instanceof Error ? e.message : String(e))
+    })
   }, [])
 
-  return { subscriptions, currency, add, update, remove, setCurrency }
+  return { subscriptions, currency, error, add, update, remove, setCurrency, lastSyncedAt, sync, syncing, isAuthenticated }
 }
