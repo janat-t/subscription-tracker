@@ -79,8 +79,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false)
   const [signedUp, setSignedUp] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+  const [linkError, setLinkError] = useState<string | null>(null)
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.slice(1))
+    const code = params.get("error_code")
+    if (code) {
+      setLinkError(params.get("error_description") ?? "Link is invalid or has expired")
+      history.replaceState(null, "", window.location.pathname)
+    }
+
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s)
@@ -92,6 +100,22 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (session === undefined) return null
 
   if (recovering) return <RecoverPasswordScreen onDone={() => setRecovering(false)} />
+
+  if (linkError) return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-sm space-y-4 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Link expired</h1>
+        <p className="text-muted-foreground text-sm">{linkError}</p>
+        <button
+          type="button"
+          className="text-sm underline text-foreground"
+          onClick={() => { setLinkError(null); setMode("forgot"); setDismissed(false) }}
+        >
+          Request a new link
+        </button>
+      </div>
+    </div>
+  )
 
   if (session || dismissed) return (
     <AuthContext.Provider value={{ showAuth: () => setDismissed(false) }}>
