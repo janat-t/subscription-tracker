@@ -60,7 +60,10 @@ export default function Dashboard() {
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">Subscription Tracker</h1>
+          <div className="flex items-center gap-2">
+            <img src="/icon.svg" alt="" className="size-7 rounded-lg" />
+            <h1 className="text-2xl font-semibold tracking-tight">Subscription Tracker</h1>
+          </div>
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <div className="flex items-center gap-1">

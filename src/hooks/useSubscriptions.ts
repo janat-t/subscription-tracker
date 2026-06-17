@@ -33,8 +33,12 @@ export function useSubscriptions() {
       getSubscriptions()
         .then(subs => {
           if (!subs) return
-          setSubscriptions(subs)
-          saveLocalSubscriptions(subs)
+          const local = getLocalSubscriptions()
+          const dbIds = new Set(subs.map(s => s.id))
+          const localOnly = local.filter(s => !dbIds.has(s.id))
+          const merged = localOnly.length > 0 ? [...subs, ...localOnly] : subs
+          setSubscriptions(merged)
+          saveLocalSubscriptions(merged)
           const now = new Date()
           saveLastSyncedAt(now)
           setLastSyncedAt(now)
@@ -92,7 +96,7 @@ export function useSubscriptions() {
       saveLocalSubscriptions(next)
       return next
     })
-    addSubscription(newSub).catch((e: unknown) => {
+    addSubscription(newSub).then(() => setError(null)).catch((e: unknown) => {
       setError(e instanceof Error ? e.message : String(e))
     })
   }, [])
@@ -103,7 +107,7 @@ export function useSubscriptions() {
       saveLocalSubscriptions(next)
       return next
     })
-    updateSubscription(id, sub).catch((e: unknown) => {
+    updateSubscription(id, sub).then(() => setError(null)).catch((e: unknown) => {
       setError(e instanceof Error ? e.message : String(e))
     })
   }, [])
@@ -114,7 +118,7 @@ export function useSubscriptions() {
       saveLocalSubscriptions(next)
       return next
     })
-    deleteSubscription(id).catch((e: unknown) => {
+    deleteSubscription(id).then(() => setError(null)).catch((e: unknown) => {
       setError(e instanceof Error ? e.message : String(e))
     })
   }, [])
@@ -122,7 +126,7 @@ export function useSubscriptions() {
   const setCurrency = useCallback((c: string) => {
     saveCurrency(c)
     setCurrencyState(c)
-    saveCurrencyDB(c).catch((e: unknown) => {
+    saveCurrencyDB(c).then(() => setError(null)).catch((e: unknown) => {
       setError(e instanceof Error ? e.message : String(e))
     })
   }, [])
