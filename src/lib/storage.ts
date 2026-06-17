@@ -60,8 +60,8 @@ function subToDbUpdate(sub: Omit<Subscription, "id" | "createdAt">) {
 }
 
 async function getUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getUser()
-  return data.user?.id ?? null
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user.id ?? null
 }
 
 export function getLocalSubscriptions(): Subscription[] {
