@@ -78,8 +78,8 @@ export default function Dashboard() {
                   <span className="text-xs text-muted-foreground">Saved {formatRelativeTime(lastSyncedAt)}</span>
                 )}
                 <Button variant="ghost" size="sm" onClick={sync} disabled={syncing}>
-                  <UploadCloud className="size-4 mr-1" />
-                  {syncing ? 'Saving...' : 'Save to cloud'}
+                  <UploadCloud className="size-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{syncing ? 'Saving...' : 'Save to cloud'}</span>
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()}>
                   <LogOut className="size-4" />
