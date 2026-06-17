@@ -128,7 +128,7 @@ export default function SubscriptionForm() {
                 onValueChange={v => set({ billingCycle: v as BillingCycle })}
               >
                 <SelectTrigger id="billingCycle">
-                  <SelectValue />
+                  <SelectValue>{{ monthly: 'Monthly', annually: 'Annually' }[state.billingCycle]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="monthly">Monthly</SelectItem>
@@ -158,7 +158,7 @@ export default function SubscriptionForm() {
                   onValueChange={v => v && set({ billingMonth: parseInt(v, 10) })}
                 >
                   <SelectTrigger id="billingMonth">
-                    <SelectValue />
+                    <SelectValue>{MONTHS[state.billingMonth - 1]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((month, i) => (
