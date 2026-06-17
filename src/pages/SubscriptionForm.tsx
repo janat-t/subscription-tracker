@@ -20,8 +20,7 @@ function emptyState(): {
   billingCycle: BillingCycle
   billingDay: string
   billingMonth: number
-  paymentType: 'Credit Card' | 'Apple Pay' | 'Google Pay'
-  cardLabel: string
+  paymentMethod: string
   category: Category
 } {
   return {
@@ -30,8 +29,7 @@ function emptyState(): {
     billingCycle: 'monthly',
     billingDay: '1',
     billingMonth: new Date().getMonth() + 1,
-    paymentType: 'Credit Card',
-    cardLabel: '',
+    paymentMethod: '',
     category: 'Entertainment',
   }
 }
@@ -58,14 +56,7 @@ export default function SubscriptionForm() {
       billingDay: String(sub.billingDay),
       billingMonth: sub.billingMonth ?? (new Date(sub.createdAt).getMonth() + 1),
       category: sub.category,
-      paymentType:
-        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay'
-          ? (sub.paymentMethod as 'Apple Pay' | 'Google Pay')
-          : 'Credit Card',
-      cardLabel:
-        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay' || sub.paymentMethod === 'Credit Card'
-          ? ''
-          : sub.paymentMethod,
+      paymentMethod: sub.paymentMethod === 'Credit Card' ? '' : sub.paymentMethod,
     })
   }, [id, subscriptions])
 
@@ -76,16 +67,13 @@ export default function SubscriptionForm() {
     setSubmitError(null)
     setSubmitting(true)
 
-    const paymentMethod =
-      state.paymentType === 'Credit Card' ? (state.cardLabel.trim() || 'Credit Card') : state.paymentType
-
     const data = {
       name: state.name,
       price: parseFloat(state.price),
       billingCycle: state.billingCycle,
       billingDay: parseInt(state.billingDay, 10),
       billingMonth: state.billingCycle === 'annually' ? state.billingMonth : undefined,
-      paymentMethod,
+      paymentMethod: state.paymentMethod.trim() || 'Credit Card',
       category: state.category,
     }
 
@@ -184,40 +172,22 @@ export default function SubscriptionForm() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="paymentType">Payment Method</Label>
-              <Select
-                value={state.paymentType}
-                onValueChange={v =>
-                  set({
-                    paymentType: v as 'Credit Card' | 'Apple Pay' | 'Google Pay',
-                    cardLabel:
-                      v === 'Credit Card' ? state.cardLabel : '',
-                  })
-                }
-              >
-                <SelectTrigger id="paymentType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Credit Card">Credit Card</SelectItem>
-                  <SelectItem value="Apple Pay">Apple Pay</SelectItem>
-                  <SelectItem value="Google Pay">Google Pay</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Input
+                id="paymentMethod"
+                list="payment-suggestions"
+                placeholder="e.g. Chase Sapphire, Apple Pay"
+                value={state.paymentMethod}
+                onChange={e => set({ paymentMethod: e.target.value })}
+              />
+              <datalist id="payment-suggestions">
+                <option value="Credit Card" />
+                <option value="Apple Pay" />
+                <option value="Google Pay" />
+                <option value="PayPal" />
+                <option value="Venmo" />
+              </datalist>
             </div>
-
-            {state.paymentType === 'Credit Card' && (
-              <div className="space-y-2">
-                <Label htmlFor="cardLabel">Card Label</Label>
-                <Input
-                  id="cardLabel"
-                  placeholder="e.g. Chase Sapphire"
-                  value={state.cardLabel}
-                  onChange={e => set({ cardLabel: e.target.value })}
-                  required={state.paymentType === 'Credit Card'}
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
