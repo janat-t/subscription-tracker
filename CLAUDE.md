@@ -17,7 +17,11 @@ No test suite exists. Verify changes by running `npm run build` (catches TypeScr
 
 **Stack:** React 18 + Vite 8 (Rolldown bundler) + TypeScript (strict) + Tailwind CSS v4 + shadcn/ui v4 + React Router v7. Deployed as a Cloudflare Worker with static assets (`wrangler.jsonc`, `not_found_handling: single-page-application`). `react-is` must be listed as an explicit dependency — Rolldown won't resolve it transitively from recharts.
 
-**Persistence:** localStorage only. Two keys: `subscriptions` (JSON array of `Subscription`) and `currency` (string, default `"USD"`). `src/lib/storage.ts` is the only file that touches `localStorage`. `src/hooks/useSubscriptions.ts` wraps storage in React state; every mutation re-reads from storage before writing to avoid stale-closure bugs.
+**Persistence:** localStorage is the primary write layer; Supabase Postgres is the authoritative read source for authenticated users. `src/lib/storage.ts` is the only file that touches either — it exports both sync localStorage helpers (`getLocalSubscriptions`, `saveLocalSubscriptions`) and async Supabase functions (`getSubscriptions`, `addSubscription`, `updateSubscription`, `deleteSubscription`, `syncToDatabase`). localStorage keys: `subscriptions` (JSON array of `Subscription`), `currency` (string, default `"USD"`), `lastSyncedAt` (ISO timestamp). Currency is also synced to Supabase user metadata via `getCurrencyDB`/`saveCurrencyDB`. All Supabase functions no-op silently when the user is not authenticated (guest mode).
+
+**Auth:** `src/components/AuthGate.tsx` wraps the app and shows an email/password form when no session exists. "Continue without signing in" renders children immediately (guest mode — localStorage only). On sign-up, existing localStorage subscriptions are migrated to Supabase. `src/lib/supabase.ts` exports the Supabase client with hardcoded public URL and publishable key (safe to commit — RLS enforces isolation).
+
+**Sync:** `useSubscriptions` inits from localStorage (instant), then fetches from DB on mount if authenticated (overwrites localStorage). Mutations write localStorage first, fire background DB calls. `syncToDatabase` (delete-all + insert-all) runs on window blur and the "Save to cloud" button. The hook exposes `sync`, `syncing`, `lastSyncedAt`, and `isAuthenticated`.
 
 **Routing:** Two routes — `/` (Dashboard) and `/add` + `/edit/:id` (SubscriptionForm). `BrowserRouter` uses `basename={import.meta.env.BASE_URL}` (resolves to `/` in production via `vite.config.ts`).
 

@@ -1,6 +1,6 @@
 # Subscription Tracker
 
-A minimal, modern web app to track your recurring subscriptions — no account needed, no backend, no data leaves your browser.
+A minimal, modern web app to track your recurring subscriptions. Works offline with local storage; sign in to sync across devices via Supabase.
 
 **Live:** https://subscriptions.janat-t.com
 
@@ -8,13 +8,13 @@ A minimal, modern web app to track your recurring subscriptions — no account n
 
 - **Dashboard** — total monthly spend (annual subs normalized to monthly), spend-by-category donut chart, full subscription list
 - **Sort & filter** — sort by price, name, or next payment date; filter by category; search by name
-- **Dark mode** — system / light / dark toggle, persisted to localStorage, no flash on load
 - **Add / Edit / Delete** subscriptions with confirmation dialog
 - **Payment methods** — credit card (custom label), Apple Pay, Google Pay
 - **Billing cycles** — monthly or annually; next payment date auto-calculated from billing day
 - **10 categories** — Entertainment, Productivity, Cloud/Storage, News & Media, Health & Fitness, Finance, Shopping, Gaming, Utilities, Other
-- **Currency picker** — switch display currency globally (USD, EUR, GBP, JPY, and more)
-- **Local-only** — all data stored in `localStorage`, zero server calls
+- **Settings** — currency picker (USD, EUR, GBP, JPY, and more) + light/dark/system theme, grouped in a single gear icon
+- **Auth + cloud sync** — optional Supabase sign-in; localStorage is the write-through cache, DB is authoritative on load; "Save to cloud" button + auto-sync on tab blur
+- **Guest mode** — use the app without signing in; data stays in localStorage only
 
 ## Tech Stack
 
@@ -26,22 +26,18 @@ A minimal, modern web app to track your recurring subscriptions — no account n
 | Components | shadcn/ui (base-ui primitives) |
 | Charts | Recharts |
 | Routing | React Router v7 |
-| Storage | `localStorage` |
+| Storage | localStorage (primary) + Supabase Postgres (cloud) |
+| Auth | Supabase email/password |
+| Deployment | Cloudflare Workers |
 
 ## Getting Started
 
 ```bash
-# Install dependencies
 npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
+npm run dev   # http://localhost:5173
 npm run build
+npm run deploy  # Cloudflare Workers
 ```
-
-App runs at `http://localhost:5173` (or next available port).
 
 ## Project Structure
 
@@ -49,34 +45,36 @@ App runs at `http://localhost:5173` (or next available port).
 src/
 ├── types.ts                  # Subscription, Category, BillingCycle types
 ├── lib/
-│   ├── storage.ts            # localStorage read/write helpers
+│   ├── supabase.ts           # Supabase client
+│   ├── storage.ts            # localStorage + Supabase CRUD, syncToDatabase
 │   └── utils.ts              # monthlyEquivalent, nextPaymentDate, formatCurrency
 ├── hooks/
-│   └── useSubscriptions.ts   # CRUD state over localStorage
+│   └── useSubscriptions.ts   # CRUD state; localStorage-first, background DB sync
 ├── pages/
 │   ├── Dashboard.tsx         # / route
 │   └── SubscriptionForm.tsx  # /add and /edit/:id routes
 └── components/
+    ├── AuthGate.tsx          # Auth form gate; "Continue without signing in"
+    ├── SettingsDialog.tsx    # Theme + currency settings
     ├── SubscriptionList.tsx
     ├── CategoryChart.tsx
-    ├── CurrencyPicker.tsx
     └── DeleteConfirmDialog.tsx
 ```
 
 ## Ideas for future improvements
 
+- **Google OAuth** — sign in with Google alongside email/password (branch `feat/google-oauth` is in progress)
 - **Upcoming payments** — a "due this week / this month" section so you never get surprised by a charge
 - **Pause / inactive toggle** — hide a subscription from totals without deleting it
-- **Export / import JSON** — backup and restore; useful for migrating to a new device
+- **Export / import JSON** — backup and restore
 - **Service emoji / icon** — let the user pick an emoji per subscription to make the list scannable at a glance
-- **Auth + cloud sync** — add Supabase auth so data syncs across devices (localStorage stays as offline cache)
 - **Trial end date** — flag a subscription as a trial with a countdown to when it converts to paid
 - **Budget alert** — warn when total monthly spend exceeds a user-set threshold
 - **PWA** — installable to home screen; the app already works fully offline
 
 ## Domain Glossary
 
-See [`CONTEXT.md`](./CONTEXT.md) for precise definitions of terms used throughout the codebase (Subscription, Billing Cycle, Billing Day, Monthly Equivalent, etc.).
+See [`CONTEXT.md`](./CONTEXT.md) for precise definitions of terms used throughout the codebase.
 
 ---
 
