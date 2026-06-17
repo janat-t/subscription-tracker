@@ -196,7 +196,9 @@ export default function SubscriptionForm() {
                 }}
               >
                 <SelectTrigger id="paymentMethod">
-                  <SelectValue placeholder="Select payment method" />
+                  <SelectValue placeholder="Select payment method">
+                    {state.addingNewMethod ? 'Add New...' : state.paymentMethod || undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {paymentSuggestions.map(m => (
