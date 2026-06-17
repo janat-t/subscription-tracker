@@ -64,9 +64,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 flex-1 w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-2">
             <img src="/icon.svg" alt="" className="size-7 rounded-lg shrink-0" />
             <h1 className="text-lg sm:text-2xl font-semibold tracking-tight truncate"><span className="hidden sm:inline">Subscription </span>Tracker</h1>
@@ -75,7 +74,7 @@ export default function Dashboard() {
             {isAuthenticated ? (
               <div className="flex items-center gap-1">
                 {lastSyncedAt && (
-                  <span className="text-xs text-muted-foreground">Saved {formatRelativeTime(lastSyncedAt)}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">Saved {formatRelativeTime(lastSyncedAt)}</span>
                 )}
                 <Button variant="ghost" size="sm" onClick={sync} disabled={syncing}>
                   <UploadCloud className="size-4 sm:mr-1" />
@@ -100,7 +99,8 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-
+      </div>
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 flex-1 w-full">
         {error && (
           <div className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded">{error}</div>
         )}
