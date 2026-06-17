@@ -64,22 +64,21 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 flex-1 w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/icon.svg" alt="" className="size-7 rounded-lg" />
-            <h1 className="text-2xl font-semibold tracking-tight">Subscription Tracker</h1>
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <img src="/icon.svg" alt="" className="size-7 rounded-lg shrink-0" />
+            <h1 className="text-lg sm:text-2xl font-semibold tracking-tight truncate"><span className="hidden sm:inline">Subscription </span>Tracker</h1>
           </div>
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <div className="flex items-center gap-1">
                 {lastSyncedAt && (
-                  <span className="text-xs text-muted-foreground">Saved {formatRelativeTime(lastSyncedAt)}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">Saved {formatRelativeTime(lastSyncedAt)}</span>
                 )}
                 <Button variant="ghost" size="sm" onClick={sync} disabled={syncing}>
-                  <UploadCloud className="size-4 mr-1" />
-                  {syncing ? 'Saving...' : 'Save to cloud'}
+                  <UploadCloud className="size-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{syncing ? 'Saving...' : 'Save to cloud'}</span>
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()}>
                   <LogOut className="size-4" />
@@ -100,7 +99,8 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-
+      </div>
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 flex-1 w-full">
         {error && (
           <div className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded">{error}</div>
         )}
@@ -169,7 +169,7 @@ export default function Dashboard() {
         )}
 
         {/* Search + Sort + Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
@@ -179,8 +179,9 @@ export default function Dashboard() {
               className="pl-8"
             />
           </div>
+          <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="flex-1 sm:w-[160px]">
               <SelectValue>
                 {({'price-desc': 'Price: High → Low', 'price-asc': 'Price: Low → High', 'name': 'Name', 'next-payment': 'Next payment'} as Record<string, string>)[sortBy]}
               </SelectValue>
@@ -206,6 +207,7 @@ export default function Dashboard() {
               </span>
             )}
           </Button>
+          </div>
         </div>
 
         {filtersOpen && (
