@@ -23,6 +23,7 @@ function emptyState(): {
   billingDay: string
   billingMonth: number
   paymentMethod: string
+  addingNewMethod: boolean
   category: Category
 } {
   return {
@@ -32,6 +33,7 @@ function emptyState(): {
     billingDay: '1',
     billingMonth: new Date().getMonth() + 1,
     paymentMethod: '',
+    addingNewMethod: false,
     category: 'Entertainment',
   }
 }
@@ -59,6 +61,7 @@ export default function SubscriptionForm() {
       billingMonth: sub.billingMonth ?? (new Date(sub.createdAt).getMonth() + 1),
       category: sub.category,
       paymentMethod: sub.paymentMethod,
+      addingNewMethod: false,
     })
   }, [id, subscriptions])
 
@@ -68,6 +71,12 @@ export default function SubscriptionForm() {
     e.preventDefault()
     setSubmitError(null)
     setSubmitting(true)
+
+    if (!state.paymentMethod.trim()) {
+      setSubmitError('Payment method is required.')
+      setSubmitting(false)
+      return
+    }
 
     const data = {
       name: state.name,
@@ -178,17 +187,33 @@ export default function SubscriptionForm() {
 
             <div className="space-y-2">
               <Label htmlFor="paymentMethod">Payment Method</Label>
-              <Input
-                id="paymentMethod"
-                list="payment-suggestions"
-                placeholder="e.g. Chase Sapphire, Apple Pay"
-                value={state.paymentMethod}
-                onChange={e => set({ paymentMethod: e.target.value })}
-                required
-              />
-              <datalist id="payment-suggestions">
-                {paymentSuggestions.map(m => <option key={m} value={m} />)}
-              </datalist>
+              <Select
+                value={state.addingNewMethod ? '__add_new__' : state.paymentMethod}
+                onValueChange={v => {
+                  if (!v) return
+                  if (v === '__add_new__') set({ addingNewMethod: true, paymentMethod: '' })
+                  else set({ addingNewMethod: false, paymentMethod: v })
+                }}
+              >
+                <SelectTrigger id="paymentMethod">
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  {paymentSuggestions.map(m => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                  <SelectItem value="__add_new__">Add New...</SelectItem>
+                </SelectContent>
+              </Select>
+              {state.addingNewMethod && (
+                <Input
+                  placeholder="Enter payment method"
+                  value={state.paymentMethod}
+                  onChange={e => set({ paymentMethod: e.target.value })}
+                  required
+                  autoFocus
+                />
+              )}
             </div>
 
             <div className="space-y-2">
