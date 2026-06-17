@@ -185,6 +185,7 @@ export default function SubscriptionForm() {
                 <option value="Apple Pay" />
                 <option value="Google Pay" />
                 <option value="PayPal" />
+                <option value="PayPay" />
                 <option value="Venmo" />
               </datalist>
             </div>
