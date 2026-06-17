@@ -33,8 +33,12 @@ export function useSubscriptions() {
       getSubscriptions()
         .then(subs => {
           if (!subs) return
-          setSubscriptions(subs)
-          saveLocalSubscriptions(subs)
+          const local = getLocalSubscriptions()
+          const dbIds = new Set(subs.map(s => s.id))
+          const localOnly = local.filter(s => !dbIds.has(s.id))
+          const merged = localOnly.length > 0 ? [...subs, ...localOnly] : subs
+          setSubscriptions(merged)
+          saveLocalSubscriptions(merged)
           const now = new Date()
           saveLastSyncedAt(now)
           setLastSyncedAt(now)
