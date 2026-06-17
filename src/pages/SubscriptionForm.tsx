@@ -20,8 +20,7 @@ function emptyState(): {
   billingCycle: BillingCycle
   billingDay: string
   billingMonth: number
-  paymentType: 'Credit Card' | 'Apple Pay' | 'Google Pay'
-  cardLabel: string
+  paymentMethod: string
   category: Category
 } {
   return {
@@ -30,8 +29,7 @@ function emptyState(): {
     billingCycle: 'monthly',
     billingDay: '1',
     billingMonth: new Date().getMonth() + 1,
-    paymentType: 'Credit Card',
-    cardLabel: '',
+    paymentMethod: '',
     category: 'Entertainment',
   }
 }
@@ -42,6 +40,8 @@ export default function SubscriptionForm() {
   const { add, update, subscriptions } = useSubscriptions()
 
   const [state, setState] = useState(emptyState)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -56,24 +56,16 @@ export default function SubscriptionForm() {
       billingDay: String(sub.billingDay),
       billingMonth: sub.billingMonth ?? (new Date(sub.createdAt).getMonth() + 1),
       category: sub.category,
-      paymentType:
-        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay'
-          ? (sub.paymentMethod as 'Apple Pay' | 'Google Pay')
-          : 'Credit Card',
-      cardLabel:
-        sub.paymentMethod === 'Apple Pay' || sub.paymentMethod === 'Google Pay'
-          ? ''
-          : sub.paymentMethod,
+      paymentMethod: sub.paymentMethod === 'Credit Card' ? '' : sub.paymentMethod,
     })
   }, [id, subscriptions])
 
   const set = (patch: Partial<typeof state>) => setState(prev => ({ ...prev, ...patch }))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    const paymentMethod =
-      state.paymentType === 'Credit Card' ? state.cardLabel : state.paymentType
+    setSubmitError(null)
+    setSubmitting(true)
 
     const data = {
       name: state.name,
@@ -81,17 +73,21 @@ export default function SubscriptionForm() {
       billingCycle: state.billingCycle,
       billingDay: parseInt(state.billingDay, 10),
       billingMonth: state.billingCycle === 'annually' ? state.billingMonth : undefined,
-      paymentMethod,
+      paymentMethod: state.paymentMethod.trim() || 'Credit Card',
       category: state.category,
     }
 
-    if (id) {
-      update(id, data)
-    } else {
-      add(data)
+    try {
+      if (id) {
+        await update(id, data)
+      } else {
+        await add(data)
+      }
+      navigate('/')
+    } catch {
+      setSubmitError('Could not save. Please try again.')
+      setSubmitting(false)
     }
-
-    navigate('/')
   }
 
   return (
@@ -132,7 +128,7 @@ export default function SubscriptionForm() {
                 onValueChange={v => set({ billingCycle: v as BillingCycle })}
               >
                 <SelectTrigger id="billingCycle">
-                  <SelectValue />
+                  <SelectValue>{{ monthly: 'Monthly', annually: 'Annually' }[state.billingCycle]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="monthly">Monthly</SelectItem>
@@ -162,7 +158,7 @@ export default function SubscriptionForm() {
                   onValueChange={v => v && set({ billingMonth: parseInt(v, 10) })}
                 >
                   <SelectTrigger id="billingMonth">
-                    <SelectValue />
+                    <SelectValue>{MONTHS[state.billingMonth - 1]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((month, i) => (
@@ -176,40 +172,23 @@ export default function SubscriptionForm() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="paymentType">Payment Method</Label>
-              <Select
-                value={state.paymentType}
-                onValueChange={v =>
-                  set({
-                    paymentType: v as 'Credit Card' | 'Apple Pay' | 'Google Pay',
-                    cardLabel:
-                      v === 'Credit Card' ? state.cardLabel : '',
-                  })
-                }
-              >
-                <SelectTrigger id="paymentType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Credit Card">Credit Card</SelectItem>
-                  <SelectItem value="Apple Pay">Apple Pay</SelectItem>
-                  <SelectItem value="Google Pay">Google Pay</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Input
+                id="paymentMethod"
+                list="payment-suggestions"
+                placeholder="e.g. Chase Sapphire, Apple Pay"
+                value={state.paymentMethod}
+                onChange={e => set({ paymentMethod: e.target.value })}
+              />
+              <datalist id="payment-suggestions">
+                <option value="Credit Card" />
+                <option value="Apple Pay" />
+                <option value="Google Pay" />
+                <option value="PayPal" />
+                <option value="PayPay" />
+                <option value="Venmo" />
+              </datalist>
             </div>
-
-            {state.paymentType === 'Credit Card' && (
-              <div className="space-y-2">
-                <Label htmlFor="cardLabel">Card Label</Label>
-                <Input
-                  id="cardLabel"
-                  placeholder="e.g. Chase Sapphire"
-                  value={state.cardLabel}
-                  onChange={e => set({ cardLabel: e.target.value })}
-                  required={state.paymentType === 'Credit Card'}
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
@@ -230,11 +209,16 @@ export default function SubscriptionForm() {
               </Select>
             </div>
 
+            {submitError && (
+              <p className="text-sm text-destructive">{submitError}</p>
+            )}
             <div className="flex gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => navigate('/')}>
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Saving…' : 'Save'}
+              </Button>
             </div>
           </form>
         </CardContent>
