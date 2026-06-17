@@ -14,6 +14,8 @@ const MONTHS = [
   'July','August','September','October','November','December',
 ]
 
+const STATIC_PAYMENT_METHODS = ['Credit Card', 'Apple Pay', 'Google Pay', 'PayPal', 'PayPay', 'Venmo']
+
 function emptyState(): {
   name: string
   price: string
@@ -56,7 +58,7 @@ export default function SubscriptionForm() {
       billingDay: String(sub.billingDay),
       billingMonth: sub.billingMonth ?? (new Date(sub.createdAt).getMonth() + 1),
       category: sub.category,
-      paymentMethod: sub.paymentMethod === 'Credit Card' ? '' : sub.paymentMethod,
+      paymentMethod: sub.paymentMethod,
     })
   }, [id, subscriptions])
 
@@ -73,7 +75,7 @@ export default function SubscriptionForm() {
       billingCycle: state.billingCycle,
       billingDay: parseInt(state.billingDay, 10),
       billingMonth: state.billingCycle === 'annually' ? state.billingMonth : undefined,
-      paymentMethod: state.paymentMethod.trim() || 'Credit Card',
+      paymentMethod: state.paymentMethod.trim(),
       category: state.category,
     }
 
@@ -89,6 +91,9 @@ export default function SubscriptionForm() {
       setSubmitting(false)
     }
   }
+
+  const existingMethods = [...new Set(subscriptions.map(s => s.paymentMethod).filter(Boolean))]
+  const paymentSuggestions = [...new Set([...existingMethods, ...STATIC_PAYMENT_METHODS])]
 
   return (
     <div className="min-h-screen bg-background flex items-start justify-center px-4 py-8">
@@ -179,14 +184,10 @@ export default function SubscriptionForm() {
                 placeholder="e.g. Chase Sapphire, Apple Pay"
                 value={state.paymentMethod}
                 onChange={e => set({ paymentMethod: e.target.value })}
+                required
               />
               <datalist id="payment-suggestions">
-                <option value="Credit Card" />
-                <option value="Apple Pay" />
-                <option value="Google Pay" />
-                <option value="PayPal" />
-                <option value="PayPay" />
-                <option value="Venmo" />
+                {paymentSuggestions.map(m => <option key={m} value={m} />)}
               </datalist>
             </div>
 
