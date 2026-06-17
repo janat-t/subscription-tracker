@@ -63,7 +63,6 @@ src/
 
 ## Ideas for future improvements
 
-- **Google OAuth** — sign in with Google alongside email/password (branch `feat/google-oauth` is in progress)
 - **Upcoming payments** — a "due this week / this month" section so you never get surprised by a charge
 - **Pause / inactive toggle** — hide a subscription from totals without deleting it
 - **Export / import JSON** — backup and restore
