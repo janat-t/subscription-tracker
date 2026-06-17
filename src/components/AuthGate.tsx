@@ -69,7 +69,8 @@ async function migrateLocalStorage() {
       createdAt: s.createdAt ?? new Date().toISOString(),
     }))
     const dbSubs = await getSubscriptions()
-    const dbIds = new Set(dbSubs?.map((s: Subscription) => s.id))
+    if (!dbSubs) return
+    const dbIds = new Set(dbSubs.map((s: Subscription) => s.id))
     for (const sub of localSubs) {
       if (!dbIds.has(sub.id)) {
         await addSubscription(sub)

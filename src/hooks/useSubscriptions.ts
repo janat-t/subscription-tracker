@@ -45,7 +45,7 @@ export function useSubscriptions() {
           setLastSyncedAt(now)
           hasLoadedRef.current = true
         })
-        .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+        .catch((e: unknown) => { hasLoadedRef.current = true; setError(e instanceof Error ? e.message : String(e)) })
       getCurrencyDB()
         .then(c => {
           if (c) { saveCurrency(c); setCurrencyState(c) }
@@ -90,10 +90,12 @@ export function useSubscriptions() {
 
   useEffect(() => {
     const handleFocus = async () => {
-      const subs = await getSubscriptions()
-      if (!subs || subs.length === 0) return
-      setSubscriptions(subs)
-      saveLocalSubscriptions(subs)
+      try {
+        const subs = await getSubscriptions()
+        if (!subs || subs.length === 0) return
+        setSubscriptions(subs)
+        saveLocalSubscriptions(subs)
+      } catch {}
     }
     window.addEventListener("focus", handleFocus)
     return () => window.removeEventListener("focus", handleFocus)
