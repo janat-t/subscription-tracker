@@ -38,6 +38,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [password, setPassword] = useState("")
   const [authError, setAuthError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [signedUp, setSignedUp] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -60,6 +61,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         const { error } = await supabase.auth.signUp({ email, password })
         if (error) { setAuthError(error.message); return }
         await migrateLocalStorage()
+        setSignedUp(true)
+        return
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) { setAuthError(error.message); return }
@@ -67,6 +70,26 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (signedUp) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
+          <p className="text-muted-foreground text-sm">
+            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then sign in.
+          </p>
+          <button
+            type="button"
+            className="text-sm underline text-foreground"
+            onClick={() => { setSignedUp(false); setMode("signin") }}
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
