@@ -1,16 +1,16 @@
-import type { Subscription } from '@/types'
-import { formatCurrency, formatDate, nextPaymentDate } from '@/lib/utils'
-import { CATEGORY_COLORS, PALETTE } from '@/lib/category-colors'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Pencil, Trash2 } from 'lucide-react'
+import type { Subscription } from "@/types";
+import { formatCurrency, formatDate, nextPaymentDate } from "@/lib/utils";
+import { CATEGORY_COLORS, PALETTE } from "@/lib/category-colors";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface SubscriptionListProps {
-  subscriptions: Subscription[]
-  currency: string
-  onEdit: (id: string) => void
-  onDelete: (id: string) => void
+  subscriptions: Subscription[];
+  currency: string;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function SubscriptionList({
@@ -24,7 +24,7 @@ export default function SubscriptionList({
       <p className="text-center text-muted-foreground">
         No subscriptions yet. Add your first one.
       </p>
-    )
+    );
   }
 
   return (
@@ -38,22 +38,27 @@ export default function SubscriptionList({
                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                   <Badge
                     style={{
-                      backgroundColor: CATEGORY_COLORS[sub.category] ?? PALETTE[0],
-                      color: '#fff',
-                      borderColor: 'transparent',
+                      backgroundColor:
+                        CATEGORY_COLORS[sub.category] ?? PALETTE[0],
+                      color: "#fff",
+                      borderColor: "transparent",
                     }}
                   >
                     {sub.category}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {sub.billingCycle === 'monthly' ? 'Monthly' : 'Annually'}
+                    {sub.billingCycle === "monthly" ? "Monthly" : "Annually"}
                   </span>
-                  <span className="text-xs text-muted-foreground">{sub.paymentMethod}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {sub.paymentMethod}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <div className="text-right mr-1">
-                  <div className="text-sm font-medium">{formatCurrency(sub.price, currency)}</div>
+                  <div className="text-sm font-medium">
+                    {formatCurrency(sub.price, currency)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     Next: {formatDate(nextPaymentDate(sub))}
                   </div>
@@ -79,5 +84,5 @@ export default function SubscriptionList({
         </Card>
       ))}
     </div>
-  )
+  );
 }

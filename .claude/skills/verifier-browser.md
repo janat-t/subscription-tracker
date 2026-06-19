@@ -22,14 +22,14 @@ sleep 4 && curl -s -o /dev/null -w "%{http_code}" http://localhost:5175/
 ## Drive with Playwright
 
 ```js
-import { chromium } from 'playwright';
+import { chromium } from "playwright";
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext();
 const page = await ctx.newPage();
-const BASE = 'http://localhost:5175';
+const BASE = "http://localhost:5175";
 
 await page.goto(BASE);
-await page.waitForSelector('h1', { timeout: 8000 }); // wait past AuthGate null
+await page.waitForSelector("h1", { timeout: 8000 }); // wait past AuthGate null
 ```
 
 ## Notes

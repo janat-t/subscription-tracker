@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,13 +6,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
 interface DeleteConfirmDialogProps {
-  open: boolean
-  subscriptionName: string
-  onConfirm: () => void
-  onCancel: () => void
+  open: boolean;
+  subscriptionName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 export default function DeleteConfirmDialog({
@@ -38,5 +38,5 @@ export default function DeleteConfirmDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

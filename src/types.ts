@@ -1,38 +1,38 @@
-export type BillingCycle = 'monthly' | 'annually'
+export type BillingCycle = "monthly" | "annually";
 
 export type Category =
-  | 'Entertainment'
-  | 'Productivity'
-  | 'Cloud / Storage'
-  | 'News & Media'
-  | 'Health & Fitness'
-  | 'Finance'
-  | 'Shopping'
-  | 'Gaming'
-  | 'Utilities'
-  | 'Other'
+  | "Entertainment"
+  | "Productivity"
+  | "Cloud / Storage"
+  | "News & Media"
+  | "Health & Fitness"
+  | "Finance"
+  | "Shopping"
+  | "Gaming"
+  | "Utilities"
+  | "Other";
 
 export const CATEGORIES: Category[] = [
-  'Entertainment',
-  'Productivity',
-  'Cloud / Storage',
-  'News & Media',
-  'Health & Fitness',
-  'Finance',
-  'Shopping',
-  'Gaming',
-  'Utilities',
-  'Other',
-]
+  "Entertainment",
+  "Productivity",
+  "Cloud / Storage",
+  "News & Media",
+  "Health & Fitness",
+  "Finance",
+  "Shopping",
+  "Gaming",
+  "Utilities",
+  "Other",
+];
 
 export interface Subscription {
-  id: string
-  name: string
-  price: number
-  billingCycle: BillingCycle
-  billingDay: number
-  billingMonth?: number  // 1-12, only used for annually; absent in legacy data
-  paymentMethod: string
-  category: Category
-  createdAt: string
+  id: string;
+  name: string;
+  price: number;
+  billingCycle: BillingCycle;
+  billingDay: number;
+  billingMonth?: number; // 1-12, only used for annually; absent in legacy data
+  paymentMethod: string;
+  category: Category;
+  createdAt: string;
 }

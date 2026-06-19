@@ -30,6 +30,7 @@ No test suite exists. Verify changes by running `npm run build` (catches TypeScr
 **Theming:** `ThemeProvider` wraps the entire app in `App.tsx` and manages `system | light | dark` state, toggling the `dark` class on `<html>`. shadcn CSS variables in `index.css` define both `:root` and `.dark` palettes — no Tailwind `dark:` utilities needed. An inline script in `index.html` sets the class before React loads to prevent flash.
 
 **shadcn/ui specifics:** Uses Tailwind v4 (`@tailwindcss/vite` plugin, not PostCSS). The `@theme inline` block in `index.css` maps CSS variables to Tailwind color utilities. shadcn components use `@base-ui/react` primitives — `DialogTrigger` takes a `render` prop, not `asChild`:
+
 ```tsx
 <DialogTrigger render={<Button variant="ghost" size="icon" />}>
 ```
