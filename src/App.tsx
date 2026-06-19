@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { ThemeProvider } from "@/components/ThemeProvider"
-import AuthGate from "@/components/AuthGate"
-import Dashboard from "@/pages/Dashboard"
-import SubscriptionForm from "@/pages/SubscriptionForm"
-import Terms from "@/pages/Terms"
-import Privacy from "@/pages/Privacy"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import AuthGate from "@/components/AuthGate";
+import Dashboard from "@/pages/Dashboard";
+import SubscriptionForm from "@/pages/SubscriptionForm";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 
 export default function App() {
   return (
@@ -21,5 +21,5 @@ export default function App() {
         </BrowserRouter>
       </AuthGate>
     </ThemeProvider>
-  )
+  );
 }

@@ -18,17 +18,17 @@ A minimal, modern web app to track your recurring subscriptions. Works offline w
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | React 18 + Vite 8 |
-| Language | TypeScript (strict) |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui (base-ui primitives) |
-| Charts | Recharts |
-| Routing | React Router v7 |
-| Storage | localStorage (primary) + Supabase Postgres (cloud) |
-| Auth | Supabase email/password + Google OAuth |
-| Deployment | Cloudflare Workers |
+| Layer      | Choice                                             |
+| ---------- | -------------------------------------------------- |
+| Framework  | React 18 + Vite 8                                  |
+| Language   | TypeScript (strict)                                |
+| Styling    | Tailwind CSS v4                                    |
+| Components | shadcn/ui (base-ui primitives)                     |
+| Charts     | Recharts                                           |
+| Routing    | React Router v7                                    |
+| Storage    | localStorage (primary) + Supabase Postgres (cloud) |
+| Auth       | Supabase email/password + Google OAuth             |
+| Deployment | Cloudflare Workers                                 |
 
 ## Getting Started
 
@@ -91,12 +91,12 @@ Learn about AI Passport (by 9ARM): [youtube.com/watch?v=ZUkVeXmD-Ek](https://you
 
 ### AI tools used
 
-| Tool | Role |
-|---|---|
-| Claude Sonnet 4.6 (Claude Code) | Planning, architecture, debugging, verification |
-| [9ARM `qwen-agent` skill](https://github.com/thananon/9arm-skills/tree/main) | Scaffolding boilerplate component files |
-| Qwen3.6-35B-A3B via [9ARM gateway](https://chat.9arm.co/) | Executing the qwen-agent tasks |
-| `grill-with-docs` skill | Structured requirements interview |
-| `verify` skill + Playwright | End-to-end UI verification |
+| Tool                                                                         | Role                                            |
+| ---------------------------------------------------------------------------- | ----------------------------------------------- |
+| Claude Sonnet 4.6 (Claude Code)                                              | Planning, architecture, debugging, verification |
+| [9ARM `qwen-agent` skill](https://github.com/thananon/9arm-skills/tree/main) | Scaffolding boilerplate component files         |
+| Qwen3.6-35B-A3B via [9ARM gateway](https://chat.9arm.co/)                    | Executing the qwen-agent tasks                  |
+| `grill-with-docs` skill                                                      | Structured requirements interview               |
+| `verify` skill + Playwright                                                  | End-to-end UI verification                      |
 
 > [9ARM AI Passport](https://chat.9arm.co/) lets you mix models mid-session — use a capable frontier model for reasoning and a fast/cheap model for mechanical work — without leaving your terminal.

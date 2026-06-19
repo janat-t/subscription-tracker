@@ -1,22 +1,22 @@
-import { supabase } from "./supabase"
-import type { Subscription } from "@/types"
+import { supabase } from "./supabase";
+import type { Subscription } from "@/types";
 
-const SUBS_KEY = "subscriptions"
-const CURRENCY_KEY = "currency"
-const LAST_SYNCED_KEY = "lastSyncedAt"
+const SUBS_KEY = "subscriptions";
+const CURRENCY_KEY = "currency";
+const LAST_SYNCED_KEY = "lastSyncedAt";
 
 type DbRow = {
-  id: string
-  user_id: string
-  name: string
-  price: number
-  billing_cycle: string
-  billing_day: number
-  billing_month: number | null
-  payment_method: string
-  category: string
-  created_at: string
-}
+  id: string;
+  user_id: string;
+  name: string;
+  price: number;
+  billing_cycle: string;
+  billing_day: number;
+  billing_month: number | null;
+  payment_method: string;
+  category: string;
+  created_at: string;
+};
 
 function dbToSub(row: DbRow): Subscription {
   return {
@@ -29,7 +29,7 @@ function dbToSub(row: DbRow): Subscription {
     paymentMethod: row.payment_method,
     category: row.category as Subscription["category"],
     createdAt: row.created_at,
-  }
+  };
 }
 
 function subToDbFull(sub: Subscription, userId: string) {
@@ -44,7 +44,7 @@ function subToDbFull(sub: Subscription, userId: string) {
     payment_method: sub.paymentMethod,
     category: sub.category,
     created_at: sub.createdAt,
-  }
+  };
 }
 
 function subToDbUpdate(sub: Omit<Subscription, "id" | "createdAt">) {
@@ -56,111 +56,112 @@ function subToDbUpdate(sub: Omit<Subscription, "id" | "createdAt">) {
     billing_month: sub.billingMonth ?? null,
     payment_method: sub.paymentMethod,
     category: sub.category,
-  }
+  };
 }
 
 async function getUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession()
-  return data.session?.user.id ?? null
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
 }
 
 export function getLocalSubscriptions(): Subscription[] {
-  const raw = localStorage.getItem(SUBS_KEY)
-  return raw ? (JSON.parse(raw) as Subscription[]) : []
+  const raw = localStorage.getItem(SUBS_KEY);
+  return raw ? (JSON.parse(raw) as Subscription[]) : [];
 }
 
 export function saveLocalSubscriptions(subs: Subscription[]): void {
-  localStorage.setItem(SUBS_KEY, JSON.stringify(subs))
+  localStorage.setItem(SUBS_KEY, JSON.stringify(subs));
 }
 
 export function getLastSyncedAt(): Date | null {
-  const raw = localStorage.getItem(LAST_SYNCED_KEY)
-  return raw ? new Date(raw) : null
+  const raw = localStorage.getItem(LAST_SYNCED_KEY);
+  return raw ? new Date(raw) : null;
 }
 
 export function saveLastSyncedAt(d: Date): void {
-  localStorage.setItem(LAST_SYNCED_KEY, d.toISOString())
+  localStorage.setItem(LAST_SYNCED_KEY, d.toISOString());
 }
 
 export async function getSubscriptions(): Promise<Subscription[] | null> {
-  const userId = await getUserId()
-  if (!userId) return null
-  const { data, error } = await supabase.from("subscriptions").select("*")
-  if (error) throw new Error(error.message)
-  return (data as DbRow[]).map(dbToSub)
+  const userId = await getUserId();
+  if (!userId) return null;
+  const { data, error } = await supabase.from("subscriptions").select("*");
+  if (error) throw new Error(error.message);
+  return (data as DbRow[]).map(dbToSub);
 }
 
 export async function addSubscription(sub: Subscription): Promise<void> {
-  const userId = await getUserId()
-  if (!userId) return
+  const userId = await getUserId();
+  if (!userId) return;
   const { error } = await supabase
     .from("subscriptions")
-    .insert([subToDbFull(sub, userId)])
-  if (error) throw new Error(error.message)
+    .insert([subToDbFull(sub, userId)]);
+  if (error) throw new Error(error.message);
 }
 
 export async function updateSubscription(
   id: string,
   sub: Omit<Subscription, "id" | "createdAt">
 ): Promise<void> {
-  const userId = await getUserId()
-  if (!userId) return
+  const userId = await getUserId();
+  if (!userId) return;
   const { error } = await supabase
     .from("subscriptions")
     .update(subToDbUpdate(sub))
-    .eq("id", id)
-  if (error) throw new Error(error.message)
+    .eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteSubscription(id: string): Promise<void> {
-  const userId = await getUserId()
-  if (!userId) return
-  const { error } = await supabase.from("subscriptions").delete().eq("id", id)
-  if (error) throw new Error(error.message)
+  const userId = await getUserId();
+  if (!userId) return;
+  const { error } = await supabase.from("subscriptions").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function syncToDatabase(subs: Subscription[]): Promise<void> {
-  const userId = await getUserId()
-  if (!userId) return
+  const userId = await getUserId();
+  if (!userId) return;
   if (subs.length > 0) {
-    const { error: upsertErr } = await supabase
-      .from("subscriptions")
-      .upsert(subs.map(s => subToDbFull(s, userId)), { onConflict: 'id' })
-    if (upsertErr) throw new Error(upsertErr.message)
-    const ids = subs.map(s => s.id)
+    const { error: upsertErr } = await supabase.from("subscriptions").upsert(
+      subs.map((s) => subToDbFull(s, userId)),
+      { onConflict: "id" }
+    );
+    if (upsertErr) throw new Error(upsertErr.message);
+    const ids = subs.map((s) => s.id);
     const { error: delErr } = await supabase
       .from("subscriptions")
       .delete()
       .eq("user_id", userId)
-      .not("id", "in", `(${ids.join(",")})`)
-    if (delErr) throw new Error(delErr.message)
+      .not("id", "in", `(${ids.join(",")})`);
+    if (delErr) throw new Error(delErr.message);
   } else {
     const { error: delErr } = await supabase
       .from("subscriptions")
       .delete()
-      .eq("user_id", userId)
-    if (delErr) throw new Error(delErr.message)
+      .eq("user_id", userId);
+    if (delErr) throw new Error(delErr.message);
   }
 }
 
 export function getCurrency(): string {
-  return localStorage.getItem(CURRENCY_KEY) ?? "USD"
+  return localStorage.getItem(CURRENCY_KEY) ?? "USD";
 }
 
 export function saveCurrency(currency: string): void {
-  localStorage.setItem(CURRENCY_KEY, currency)
+  localStorage.setItem(CURRENCY_KEY, currency);
 }
 
 export async function getCurrencyDB(): Promise<string | null> {
-  const userId = await getUserId()
-  if (!userId) return null
-  const { data } = await supabase.auth.getUser()
-  return (data.user?.user_metadata?.currency as string) ?? null
+  const userId = await getUserId();
+  if (!userId) return null;
+  const { data } = await supabase.auth.getUser();
+  return (data.user?.user_metadata?.currency as string) ?? null;
 }
 
 export async function saveCurrencyDB(currency: string): Promise<void> {
-  const userId = await getUserId()
-  if (!userId) return
-  const { error } = await supabase.auth.updateUser({ data: { currency } })
-  if (error) throw new Error(error.message)
+  const userId = await getUserId();
+  if (!userId) return;
+  const { error } = await supabase.auth.updateUser({ data: { currency } });
+  if (error) throw new Error(error.message);
 }
